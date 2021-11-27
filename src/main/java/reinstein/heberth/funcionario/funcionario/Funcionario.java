@@ -29,8 +29,7 @@ public class Funcionario {
     private String email;
     private Long pis;
 
-    public Funcionario(Long id, String nome, String sobrenome, String email, Long pis) {
-        this.id = id;
+    public Funcionario(String nome, String sobrenome, String email, Long pis) {
         this.nome = nome;
         this.sobrenome = sobrenome;
         this.email = email;

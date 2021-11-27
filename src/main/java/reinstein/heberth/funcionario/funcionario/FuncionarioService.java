@@ -8,18 +8,18 @@ import java.util.List;
 @Service
 public class FuncionarioService {
 
-    private final StudentRepository studentRepository;
+    private final FuncionarioRepository funcionarioRepository;
 
     @Autowired
-    public FuncionarioService(StudentRepository studentRepository) {
-        this.studentRepository = studentRepository;
+    public FuncionarioService(FuncionarioRepository funcionarioRepository) {
+        this.funcionarioRepository = funcionarioRepository;
     }
 
     public List<Funcionario> getAllFuncionarios() {
-        return studentRepository.findAll();
+        return funcionarioRepository.findAll();
     }
 
     public void addFuncionario(Funcionario funcionario) {
-        studentRepository.save(funcionario);
+        funcionarioRepository.save(funcionario);
     }
 }
