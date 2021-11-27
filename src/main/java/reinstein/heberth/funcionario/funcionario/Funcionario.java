@@ -27,9 +27,9 @@ public class Funcionario {
     private String nome;
     private String sobrenome;
     private String email;
-    private Long pis;
+    private String pis;
 
-    public Funcionario(String nome, String sobrenome, String email, Long pis) {
+    public Funcionario(String nome, String sobrenome, String email, String pis) {
         this.nome = nome;
         this.sobrenome = sobrenome;
         this.email = email;
@@ -71,11 +71,11 @@ public class Funcionario {
         this.email = email;
     }
 
-    public Long getPis() {
+    public String getPis() {
         return pis;
     }
 
-    public void setPis(Long pis) {
+    public void setPis(String pis) {
         this.pis = pis;
     }
 }

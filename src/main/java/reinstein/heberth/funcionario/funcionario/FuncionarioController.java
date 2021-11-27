@@ -2,6 +2,9 @@ package reinstein.heberth.funcionario.funcionario;
 
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import reinstein.heberth.funcionario.exceptions.EmailTakenException;
+import reinstein.heberth.funcionario.exceptions.InvalidEmailException;
+import reinstein.heberth.funcionario.exceptions.InvalidPISException;
 
 import java.util.List;
 
@@ -18,7 +21,7 @@ public class FuncionarioController {
     }
 
     @PostMapping
-    public void addFuncionario(@RequestBody Funcionario funcionario){
+    public void addFuncionario(@RequestBody Funcionario funcionario) throws EmailTakenException, InvalidEmailException, InvalidPISException {
         funcionarioService.addFuncionario(funcionario);
     }
 
