@@ -9,13 +9,17 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import reinstein.heberth.funcionario.exceptions.EmailTakenException;
+import reinstein.heberth.funcionario.exceptions.FuncionarioNotFoundExpetion;
 import reinstein.heberth.funcionario.exceptions.InvalidEmailException;
 import reinstein.heberth.funcionario.exceptions.InvalidPISException;
 import reinstein.heberth.funcionario.validators.PISValidator;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 class FuncionarioServiceTest {
@@ -25,6 +29,9 @@ class FuncionarioServiceTest {
 
     @Mock
     private PISValidator pisValidator;
+
+    @Mock
+    EmailValidator emailValidator;
 
     private FuncionarioService underTest;
 
@@ -88,7 +95,7 @@ class FuncionarioServiceTest {
     }
 
     @Test
-    void willThrowExpetionWhenEmailIsTaken() {
+    void willThrowWhenEmailIsTaken() {
         //given
         Funcionario funcionario = new Funcionario(
                 "TestNome",
@@ -101,11 +108,10 @@ class FuncionarioServiceTest {
         //when
         //then
         assertThatThrownBy(() -> underTest.addFuncionario(funcionario)).isInstanceOf(EmailTakenException.class);
-
     }
 
     @Test
-    void willThrowExceptionWhenEmailIsNotValid() {
+    void willThrowWhenEmailIsNotValid() {
         //given
         Funcionario funcionario = new Funcionario(
                 "TestNome",
@@ -113,16 +119,16 @@ class FuncionarioServiceTest {
                 "teste@",
                 "64240065073");
 
-        given(EmailValidator.getInstance().isValid(funcionario.getEmail())).willReturn(false);
+        given(emailValidator.isValid(funcionario.getEmail())).willReturn(false);
 
         //when
         //then
         assertThatThrownBy(() -> underTest.addFuncionario(funcionario)).isInstanceOf(InvalidEmailException.class);
-
+        verify(funcionarioRepository, never()).save(funcionario);
     }
 
     @Test
-    void willThrowExpetionWhenPISIsNotValid() {
+    void willThrowWhenPISIsNotValid() {
         //given
         Funcionario funcionario = new Funcionario(
                 "TestNome",
@@ -134,18 +140,19 @@ class FuncionarioServiceTest {
         //when
         //then
         assertThatThrownBy(() -> underTest.addFuncionario(funcionario)).isInstanceOf(InvalidPISException.class);
+        verify(funcionarioRepository, never()).save(funcionario);
 
     }
 
     @Test
-    void canDeleteFuncionario(){
+    void canDeleteFuncionario() throws FuncionarioNotFoundExpetion {
         //given
         long id = 1L;
 
         //when
-        underTest.delete();
+        underTest.delete(id);
 
-        //
+        //then
         ArgumentCaptor<Long> argumentCaptor = ArgumentCaptor.forClass(Long.class);
         verify(funcionarioRepository).deleteById(argumentCaptor.capture());
         Long capId = argumentCaptor.getValue();
@@ -153,7 +160,18 @@ class FuncionarioServiceTest {
     }
 
     @Test
-    void canUpdateFuncionario(){
+    void willThrowWhenFuncionarioNotFoundWhileDeleting() throws FuncionarioNotFoundExpetion {
+        //given
+        long id = 1L;
+        given(funcionarioRepository.findById(id)).willReturn(Optional.empty());
+
+        //when
+        //then
+        assertThatThrownBy(() -> underTest.delete(id)).isInstanceOf(FuncionarioNotFoundExpetion.class);
+    }
+
+    @Test
+    void canUpdateFuncionario() throws FuncionarioNotFoundExpetion, EmailTakenException, InvalidEmailException {
         //given
         long id = 1L;
         Funcionario funcionario = new Funcionario(
@@ -162,26 +180,17 @@ class FuncionarioServiceTest {
                 "testeUpdated@email.com",
                 "64240065073");
 
+        given(funcionarioRepository.findById(id)).willReturn(Optional.of(new Funcionario(
+                "TestNome",
+                "TestSobrenome",
+                "teste@email.com",
+                "00000000")));
+
+
         //when
-        underTest.update(funcionario);
+        underTest.update(id,funcionario);
 
         //then
-        ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(String.class);
-        verify(funcionario).setNome(argumentCaptor.capture());
-        String capName = argumentCaptor.getValue();
-        assertThat(capName).isEqualTo(funcionario.getEmail());
-
-        verify(funcionario).setSobrenome(argumentCaptor.capture());
-        String capSobrenome = argumentCaptor.getValue();
-        assertThat(capSobrenome).isEqualTo(funcionario.getEmail());
-
-        verify(funcionario).setEmail(argumentCaptor.capture());
-        String capEmail = argumentCaptor.getValue();
-        assertThat(capEmail).isEqualTo(funcionario.getEmail());
-
-        verify(funcionario).setPis(argumentCaptor.capture());
-        String capPis = argumentCaptor.getValue();
-        assertThat(capPis).isEqualTo(funcionario.getEmail());
     }
 
 }

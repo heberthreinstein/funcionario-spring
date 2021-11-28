@@ -1,6 +1,7 @@
 package reinstein.heberth.funcionario.funcionario;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 
 import static javax.persistence.GenerationType.SEQUENCE;
 
@@ -24,7 +25,9 @@ public class Funcionario {
     )
     private Long id;
 
+    @Size(min=2,max=50)
     private String nome;
+    @Size(min=2,max=50)
     private String sobrenome;
     private String email;
     private String pis;
