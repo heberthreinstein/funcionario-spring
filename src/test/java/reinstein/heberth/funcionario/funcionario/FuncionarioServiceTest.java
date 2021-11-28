@@ -10,7 +10,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.test.context.transaction.TestContextTransactionUtils;
 import org.springframework.test.context.transaction.TestTransaction;
+import org.springframework.transaction.annotation.Transactional;
 import reinstein.heberth.funcionario.exceptions.EmailTakenException;
 import reinstein.heberth.funcionario.exceptions.FuncionarioNotFoundExpetion;
 import reinstein.heberth.funcionario.exceptions.InvalidEmailException;
@@ -93,7 +95,7 @@ class FuncionarioServiceTest {
     }
 
     @Test
-    void willThrowWhenEmailIsTaken() {
+    void willThrowWhenEmailIsTakenWhileAdding() {
         //given
         Funcionario funcionario = new Funcionario(
                 "TestNome",
@@ -109,7 +111,7 @@ class FuncionarioServiceTest {
     }
 
     @Test
-    void willThrowWhenEmailIsNotValid() {
+    void willThrowWhenEmailIsNotValidWhileAdding() {
         //given
         Funcionario funcionario = new Funcionario(
                 "TestNome",
@@ -126,7 +128,7 @@ class FuncionarioServiceTest {
     }
 
     @Test
-    void willThrowWhenPISIsNotValid() {
+    void willThrowWhenPISIsNotValidWhileAdding() {
         //given
         Funcionario funcionario = new Funcionario(
                 "TestNome",
@@ -194,11 +196,83 @@ class FuncionarioServiceTest {
         underTest.update(funcionario);
 
         //then
-        assertThat(funcionario.getNome()).isEqualTo("TestUpdatedNome");
-        assertThat(funcionario.getSobrenome()).isEqualTo("TestUpdatedSobrenome");
-        assertThat(funcionario.getEmail()).isEqualTo("TestUpdatedNome");
-        assertThat(funcionario.getPis()).isEqualTo("TestUpdatedNome");
+        //TODO: Não consegui validar isso de forma unitaria;
+        assertThat(false).isTrue();
+    }
 
+    @Test
+    void willThrowWhenFuncionarioNotFoundWhileUpdating() throws FuncionarioNotFoundExpetion {
+        //given
+        Funcionario funcionario = new Funcionario();
+        funcionario.setId(1L);
+        given(funcionarioRepository.findById(funcionario.getId())).willReturn(Optional.empty());
+
+        //when
+        //then
+        assertThatThrownBy(() -> underTest.update(funcionario)).isInstanceOf(FuncionarioNotFoundExpetion.class);
+    }
+
+    @Test
+    void willThrowWhenEmailIsTakenWhileUpdating() {
+        //given
+        Funcionario funcionario = new Funcionario(
+                "TestNome",
+                "TestSobrenome",
+                "teste@email.com",
+                "64240065073");
+        given(funcionarioRepository.findById(funcionario.getId())).willReturn(Optional.of(new Funcionario(
+                "TestNome",
+                "TestSobrenome",
+                "teste@email.com",
+                "64240065073")));
+
+        //when
+        //then
+        //TODO: Não consegui validar isso de forma unitaria;
+        assertThatThrownBy(() -> underTest.update(funcionario)).isInstanceOf(EmailTakenException.class);
+        assertThat(false).isTrue();
+    }
+
+    @Test
+    void willThrowWhenEmailIsNotValidWhileUpdating() {
+        //given
+        Funcionario funcionario = new Funcionario(
+                "TestNome",
+                "TestSobrenome",
+                "teste@",
+                "64240065073");
+        funcionario.setId(1L);
+        given(funcionarioRepository.findById(funcionario.getId())).willReturn(Optional.of(new Funcionario(
+                "TestNome",
+                "TestSobrenome",
+                "teste@email.com",
+                "64240065073")));
+        given(emailValidator.isValid(funcionario.getEmail())).willReturn(false);
+
+        //when
+        //then
+        assertThatThrownBy(() -> underTest.update(funcionario)).isInstanceOf(InvalidEmailException.class);
+    }
+
+    @Test
+    void willThrowWhenPisIsNotValidWhileUpdating() {
+        //given
+        Funcionario funcionario = new Funcionario(
+                "TestNome",
+                "TestSobrenome",
+                "teste@email.com",
+                "2222");
+        funcionario.setId(1L);
+        given(funcionarioRepository.findById(funcionario.getId())).willReturn(Optional.of(new Funcionario(
+                "TestNome",
+                "TestSobrenome",
+                "teste@email.com",
+                "64240065073")));
+        given(pisValidator.test(funcionario.getPis())).willReturn(false);
+
+        //when
+        //then
+        assertThatThrownBy(() -> underTest.update(funcionario)).isInstanceOf(InvalidPISException.class);
     }
 
 }
