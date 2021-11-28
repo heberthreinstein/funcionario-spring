@@ -1,6 +1,8 @@
 package reinstein.heberth.funcionario.funcionario;
 
+import net.bytebuddy.dynamic.DynamicType;
 import org.apache.commons.validator.routines.EmailValidator;
+import org.hibernate.Transaction;
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.test.context.transaction.TestTransaction;
 import reinstein.heberth.funcionario.exceptions.EmailTakenException;
 import reinstein.heberth.funcionario.exceptions.FuncionarioNotFoundExpetion;
 import reinstein.heberth.funcionario.exceptions.InvalidEmailException;
@@ -24,14 +27,9 @@ import static org.mockito.Mockito.verify;
 
 class FuncionarioServiceTest {
 
-    @Mock
-    private FuncionarioRepository funcionarioRepository;
-
-    @Mock
-    private PISValidator pisValidator;
-
-    @Mock
-    EmailValidator emailValidator;
+    @Mock private FuncionarioRepository funcionarioRepository;
+    @Mock private PISValidator pisValidator;
+    @Mock EmailValidator emailValidator;
 
     private FuncionarioService underTest;
 
@@ -148,7 +146,12 @@ class FuncionarioServiceTest {
     void canDeleteFuncionario() throws FuncionarioNotFoundExpetion {
         //given
         long id = 1L;
-
+        Funcionario funcionario = new Funcionario(
+                "TestNome",
+                "TestSobrenome",
+                "teste@",
+                "64240065073");
+        given(funcionarioRepository.findById(id)).willReturn(Optional.of(funcionario));
         //when
         underTest.delete(id);
 
@@ -171,26 +174,31 @@ class FuncionarioServiceTest {
     }
 
     @Test
-    void canUpdateFuncionario() throws FuncionarioNotFoundExpetion, EmailTakenException, InvalidEmailException {
+    void canUpdateFuncionario()
+            throws FuncionarioNotFoundExpetion, EmailTakenException, InvalidEmailException, InvalidPISException {
         //given
-        long id = 1L;
         Funcionario funcionario = new Funcionario(
                 "TestUpdatedNome",
                 "TestUpdatedSobrenome",
                 "testeUpdated@email.com",
-                "64240065073");
-
-        given(funcionarioRepository.findById(id)).willReturn(Optional.of(new Funcionario(
+                "43334212026");
+        funcionario.setId(1L);
+        given(funcionarioRepository.findById(funcionario.getId())).willReturn(Optional.of(new Funcionario(
                 "TestNome",
                 "TestSobrenome",
                 "teste@email.com",
-                "00000000")));
+                "64240065073")));
 
 
         //when
-        underTest.update(id,funcionario);
+        underTest.update(funcionario);
 
         //then
+        assertThat(funcionario.getNome()).isEqualTo("TestUpdatedNome");
+        assertThat(funcionario.getSobrenome()).isEqualTo("TestUpdatedSobrenome");
+        assertThat(funcionario.getEmail()).isEqualTo("TestUpdatedNome");
+        assertThat(funcionario.getPis()).isEqualTo("TestUpdatedNome");
+
     }
 
 }

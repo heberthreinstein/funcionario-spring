@@ -3,6 +3,7 @@ package reinstein.heberth.funcionario.funcionario;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import reinstein.heberth.funcionario.exceptions.EmailTakenException;
+import reinstein.heberth.funcionario.exceptions.FuncionarioNotFoundExpetion;
 import reinstein.heberth.funcionario.exceptions.InvalidEmailException;
 import reinstein.heberth.funcionario.exceptions.InvalidPISException;
 
@@ -21,8 +22,20 @@ public class FuncionarioController {
     }
 
     @PostMapping
-    public void addFuncionario(@RequestBody Funcionario funcionario) throws EmailTakenException, InvalidEmailException, InvalidPISException {
+    public void addFuncionario(@RequestBody Funcionario funcionario)
+            throws EmailTakenException, InvalidEmailException, InvalidPISException {
         funcionarioService.addFuncionario(funcionario);
+    }
+
+    @DeleteMapping
+    public void deleteFuncionario(@RequestParam Long id) throws FuncionarioNotFoundExpetion {
+        funcionarioService.delete(id);
+    }
+
+    @PutMapping
+    public void updateFuncionario(@RequestBody Funcionario funcionario)
+            throws FuncionarioNotFoundExpetion, EmailTakenException, InvalidEmailException, InvalidPISException {
+        funcionarioService.update(funcionario);
     }
 
 

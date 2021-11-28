@@ -16,14 +16,12 @@ import java.util.List;
 @Service
 public class FuncionarioService {
 
-    private PISValidator pisValidator;
-    private EmailValidator emailValidator;
+    private final PISValidator pisValidator;
     private final FuncionarioRepository funcionarioRepository;
 
     @Autowired
     public FuncionarioService(FuncionarioRepository funcionarioRepository) {
         this.funcionarioRepository = funcionarioRepository;
-        this.emailValidator = EmailValidator.getInstance();
         this.pisValidator = new PISValidator();
     }
 
@@ -62,9 +60,10 @@ public class FuncionarioService {
     }
 
     @Transactional(rollbackFor=Exception.class)
-    public void update(Long id, Funcionario updatedFuncionario) throws FuncionarioNotFoundExpetion, EmailTakenException, InvalidEmailException {
-        Funcionario funcionario = funcionarioRepository.findById(id)
-                .orElseThrow(() -> new FuncionarioNotFoundExpetion(id));
+    public void update(Funcionario updatedFuncionario)
+            throws FuncionarioNotFoundExpetion, EmailTakenException, InvalidEmailException, InvalidPISException {
+        Funcionario funcionario = funcionarioRepository.findById(updatedFuncionario.getId())
+                .orElseThrow(() -> new FuncionarioNotFoundExpetion(updatedFuncionario.getId()));
 
         //Nome
         if (updatedFuncionario.getNome() != null)
@@ -94,7 +93,7 @@ public class FuncionarioService {
         if (!funcionario.getPis().equals(updatedFuncionario.getPis())) {
             boolean isPisValid = pisValidator.test(updatedFuncionario.getPis());
             if (!isPisValid){
-                throw new InvalidEmailException();
+                throw new InvalidPISException();
             }
                 funcionario.setPis(updatedFuncionario.getEmail());
         }
