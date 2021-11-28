@@ -137,4 +137,51 @@ class FuncionarioServiceTest {
 
     }
 
+    @Test
+    void canDeleteFuncionario(){
+        //given
+        long id = 1L;
+
+        //when
+        underTest.delete();
+
+        //
+        ArgumentCaptor<Long> argumentCaptor = ArgumentCaptor.forClass(Long.class);
+        verify(funcionarioRepository).deleteById(argumentCaptor.capture());
+        Long capId = argumentCaptor.getValue();
+        assertThat(capId).isEqualTo(id);
+    }
+
+    @Test
+    void canUpdateFuncionario(){
+        //given
+        long id = 1L;
+        Funcionario funcionario = new Funcionario(
+                "TestUpdatedNome",
+                "TestUpdatedSobrenome",
+                "testeUpdated@email.com",
+                "64240065073");
+
+        //when
+        underTest.update(funcionario);
+
+        //then
+        ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(String.class);
+        verify(funcionario).setNome(argumentCaptor.capture());
+        String capName = argumentCaptor.getValue();
+        assertThat(capName).isEqualTo(funcionario.getEmail());
+
+        verify(funcionario).setSobrenome(argumentCaptor.capture());
+        String capSobrenome = argumentCaptor.getValue();
+        assertThat(capSobrenome).isEqualTo(funcionario.getEmail());
+
+        verify(funcionario).setEmail(argumentCaptor.capture());
+        String capEmail = argumentCaptor.getValue();
+        assertThat(capEmail).isEqualTo(funcionario.getEmail());
+
+        verify(funcionario).setPis(argumentCaptor.capture());
+        String capPis = argumentCaptor.getValue();
+        assertThat(capPis).isEqualTo(funcionario.getEmail());
+    }
+
 }
